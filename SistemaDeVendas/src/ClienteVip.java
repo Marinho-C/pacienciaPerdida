@@ -1,8 +1,9 @@
 public class ClienteVip extends CadastroCliente {
     public ClienteVip(String nome, String cpf, String enderecoCliente, String telefoneCliente,
-            String emailCliente, String senhaCliente) {
+            String emailCliente, String senhaCliente) throws Exception {
         super(nome, cpf, enderecoCliente, telefoneCliente, emailCliente, senhaCliente);
     }
+
     /*
      * nessa classe, que herda atributos da classe cliente, temos um 'plus' o
      * cliente vai conseguir ter uma porcentagem pelo produto (Valor do Desconto =
@@ -11,8 +12,8 @@ public class ClienteVip extends CadastroCliente {
      */
 
     // metodo p/ calcular desconto:
-    public double calcularDesconto(double produto) {
-        return precoProduto * 0.05; // Calcula 5% de desconto.
+    public double calcularDesconto(double precoProduto) {
+        return precoProduto * 0.05;
     }
 
     // Qual valor ficou? Tá aqui o método pra mostrar o resultado com o desconto

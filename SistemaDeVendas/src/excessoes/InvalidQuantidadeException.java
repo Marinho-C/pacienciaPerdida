@@ -1,3 +1,5 @@
+package excessoes;
+
 // Exceção para quantidade inválida
 public class InvalidQuantidadeException extends Exception {
     public InvalidQuantidadeException(String mensagem) {

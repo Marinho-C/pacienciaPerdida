@@ -2,11 +2,11 @@ import java.util.Scanner;
 
 public class Tester {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        GerenciamentoCliente gerenciamento = new GerenciamentoCliente();
+        Scanner scanner = new Scanner(System.in); // Pra quê esse scanner? Pra ler o que o usuário digitar
+        GerenciamentoCliente gerenciamento = new GerenciamentoCliente(); // Cria o gerenciador de clientes
         boolean continuar = true;
 
-        while (continuar) { // Loop para permitir múltiplos cadastros
+        while (continuar) { // Loop pra cadastrar vários clientes:
             try {
                 System.out.println("\n--- Cadastro de Cliente ---");
                 System.out.print("Digite o seu nome e sobrenome (ex.: Jurema Batista): ");
@@ -26,9 +26,11 @@ public class Tester {
 
                 CadastroCliente novoCliente;
                 if (opcaoVip.equalsIgnoreCase("S")) {
+                    // Ai é VIP, então vai cria um cliente VIP
                     novoCliente = new ClienteVip(nome, cpf, endereco, telefone, email, senha);
                     System.out.println("Cliente VIP cadastrado com sucesso!");
                 } else {
+                    // Ai não é Vip, então vai cria um cliente comum
                     novoCliente = new CadastroCliente(nome, cpf, endereco, telefone, email, senha);
                     System.out.println("Cliente comum cadastrado com sucesso!");
                 }
@@ -44,17 +46,19 @@ public class Tester {
                 }
 
             } catch (Exception e) {
+                // E se der algum erro? Vai aparecer o aviso:
                 System.out.println("Erro ao cadastrar cliente: " + e.getMessage());
             }
 
-            // Perguntar se deseja continuar cadastrando
+            // Aqui pergunta se deseja cadastrar um novo cliente
             System.out.print("\nDeseja cadastrar outro cliente? (s/n): ");
             String resposta = scanner.nextLine();
             if (resposta.equalsIgnoreCase("n")) {
-                continuar = false;
+                continuar = false; // se não quiser vamos embora. Acaba o loop
             }
         }
 
+        // O que é isso? Um menu, para quê? Para depois de cadastrar olhar
         int opcao;
         do {
             System.out.println("\n=== MENU ===");
@@ -64,13 +68,16 @@ public class Tester {
             System.out.println("0 - Sair");
             System.out.print("Escolha uma opção: ");
 
-            opcao = Integer.parseInt(scanner.nextLine()); // Evita erro ao misturar nextInt() e nextLine()
+            opcao = Integer.parseInt(scanner.nextLine()); // O porque de usar 'parse' é para evita erro ao misturar
+                                                          // nextInt() e nextLine()
 
             switch (opcao) {
                 case 1:
+                    // Lista todos os clientes:
                     gerenciamento.listarClientes();
                     break;
                 case 2:
+                    // Busca um cliente pelo ID:
                     System.out.print("Digite o ID do cliente: ");
                     String idBusca = scanner.nextLine();
                     CadastroCliente encontrado = gerenciamento.buscarCliente(idBusca);
@@ -93,19 +100,6 @@ public class Tester {
             }
         } while (opcao != 0);
 
-        scanner.close();
+        scanner.close(); // Fecha o scanner pra não gastar recurso à toa.
     }
 }
-
-/*
- * // Criando alguns clientes fictícios
- * CadastroCliente cliente1 = new CadastroCliente(1, "Jurema da Silva",
- * "Sítio Pé de Manga",
- * "99999-1234", "jurema@email.com", 1234);
- * CadastroCliente cliente2 = new CadastroCliente(2, "Bastião do Caminhão",
- * "Rua dos Tratoristas, 77",
- * "98888-5678", "bastiao@email.com", 5678);
- * gerenciamento.addCadastroCliente(cliente1);
- * gerenciamento.addCadastroCliente(cliente2);
- * 
- */
