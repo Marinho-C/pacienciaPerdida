@@ -3,61 +3,94 @@ import java.util.ArrayList;
 
 public class Pedido {
 
-    // Atributos
-    private CadastroCliente cliente;
-    private List<Produto> produtos; // Lista de produtos no pedido, é só o que o cliente vai levar
-    private double total; // Total do pedido, pra saber quanto é que deu
-    private ControladorDeEstoque controladorEstoque; // Aqui é onde a gente mexe no estoque
+    // Por que precisamos de um identificador para o pedido?
+    // Sem um ID único, como vamos referenciar um pedido específico depois?
+    private static int contadorPedidos = 1001; // Começa do 1001 e vai aumentando
+    private int id;
 
-    // Construtor
+    private CadastroCliente cliente; // Quem é o cliente que fez o pedido? Sem cliente, não tem pedido!
+    private List<ItemPedido> itensPedido; // Lista de itens que foram comprados (produto + quantidade)
+    private double total; // Total do pedido, que vai somando conforme a gente adiciona os itens
+    private ControladorDeEstoque controladorEstoque; // Quem vai garantir que temos o produto no estoque?
+
+    // Por que esse construtor é importante?
+    // Ele garante que todo pedido tenha um cliente e um controlador de estoque
+    // válidos.
     public Pedido(CadastroCliente cliente, ControladorDeEstoque controladorEstoque) {
+        this.id = contadorPedidos++; // Cada pedido recebe um número único
         this.cliente = cliente;
-        this.produtos = new ArrayList<>(); // Inicia a lista de produtos, vazio por enquanto
-        this.total = 0.0; // Começa com o total zerado, não tem jeito
-        this.controladorEstoque = controladorEstoque; // Guarda o controlador de estoque aqui
+        this.itensPedido = new ArrayList<>(); // Iniciamos a lista de itens vazia
+        this.total = 0.0; // Começa com total igual a zero
+        this.controladorEstoque = controladorEstoque; // O controlador de estoque que vai ser usado no pedido
     }
 
-    // Método para adicionar produtos ao pedido
+    // Por que precisamos de um método para adicionar produtos ao pedido?
+    // Porque um pedido sem produtos não faz sentido, né?
     public void adicionarProduto(Produto produto, int quantidade) {
         try {
-            // Verifica se tem produto no estoque
+            // Para que serve isso? Para garantir que a quantidade seja positiva antes de
+            // tentar adicionar o produto.
+            if (quantidade <= 0) {
+                System.out.println("Quantidade inválida!");
+                return;
+            }
+
+            // Verifica se o produto está disponível no estoque em quantidade suficiente.
+            // Se estiver, adiciona o item ao pedido e atualiza o total com o preço do
+            // produto.
+            // Caso contrário, exibe uma mensagem de erro.
             if (controladorEstoque.verificarDisponibilidade(produto, quantidade)) {
-                produtos.add(produto); // Oxi, coloca o produto no pedido
-                total += produto.getPreco() * quantidade; // Atualiza o preço total, não dá pra deixar de calcular
-                System.out.println("Produto " + produto.getNome() + " adicionado ao pedido.");
+                itensPedido.add(new ItemPedido(produto, quantidade)); // Agora sabemos quantos foram comprados!
+                total += produto.getPreco() * quantidade; // Atualiza o total do pedido
+                System.out.println("Produto " + produto.getNome() + " adicionado ao pedido. Quantidade: " + quantidade);
             } else {
-                System.out.println("Estoque insuficiente para " + produto.getNome()); // Se não tiver, já avisa
+                // E se o estoque não for suficiente? A gente avisa.
+                System.out.println("Estoque insuficiente para " + produto.getNome());
             }
         } catch (Exception e) {
-            System.out.println("Erro ao adicionar produto: " + e.getMessage()); // Se der erro, fala o motivo
+            // O que fazer se der algum erro? A gente informa o erro aqui.
+            System.out.println("Erro ao adicionar produto: " + e.getMessage());
         }
     }
 
-    // Método para finalizar o pedido e atualizar o estoque
+    // E se a gente não atualizar o estoque ao finalizar o pedido?
+    // O estoque ficaria incorreto, podendo vender produtos que não temos mais!
     public void finalizarPedido() {
         try {
-            for (Produto produto : produtos) {
-                controladorEstoque.atualizarEstoque(produto, -1); // Diminui a quantidade no estoque, porque o pedido
-                                                                  // foi feito
+            // Aqui, estamos percorrendo todos os itens do pedido para atualizar o estoque.
+            // Subtraímos as quantidades dos produtos vendidos.
+            for (ItemPedido item : itensPedido) {
+                controladorEstoque.atualizarEstoque(item.getProduto(), -item.getQuantidade()); // Reduz a quantidade do
+                                                                                               // estoque
             }
-            System.out.println("Pedido finalizado com sucesso!"); // Se deu certo, avisa que foi
+            System.out.println("Pedido #" + id + " finalizado com sucesso!");
         } catch (Exception e) {
-            System.out.println("Erro ao finalizar pedido: " + e.getMessage()); // Se não der certo, já avisa também
+            // E se der erro na hora de finalizar? A gente avisa também.
+            System.out.println("Erro ao finalizar pedido: " + e.getMessage());
         }
     }
 
-    // Método para exibir os produtos do pedido
+    // Como o cliente vai saber o que comprou? Aqui, exibimos um resumo do pedido.
     public void exibirPedido() {
-        System.out.println("Pedido do cliente: " + cliente.getNome()); // Mostra o nome do cliente
+        System.out.println("Pedido #" + id + " do cliente: " + cliente.getNome());
         System.out.println("Produtos no pedido:");
-        for (Produto p : produtos) {
-            System.out.println("- " + p.getNome() + " | R$ " + p.getPreco()); // Mostra os produtos e o preço
+        for (ItemPedido item : itensPedido) {
+            // Exibimos cada produto do pedido com quantidade e preço.
+            System.out.println("- " + item.getProduto().getNome() + " | Quantidade: " + item.getQuantidade() + " | R$ "
+                    + item.getProduto().getPreco());
         }
-        System.out.println("Total do pedido: R$ " + total); // No final, diz quanto deu o total
+        // Exibe o total do pedido ao final.
+        System.out.println("Total do pedido: R$ " + total);
     }
 
-    // Método para retornar o valor total do pedido
+    // Esse método é realmente necessário?
+    // Sim! Se precisarmos consultar o total do pedido em outro lugar, já temos um
+    // método pronto.
     public double getTotal() {
-        return total; // Aqui, só devolve o valor total, sem mistério
+        return total; // Retorna o total do pedido
     }
-}
+
+// Por que precisamos desse método? Porque, caso precisemos salvar os dados do
+// pedido em um arquivo CSV, temos que formatar assim.
+public List<String> getDadosPedidoParaCSV() {
+        List<String> dadosPedido = new ArrayList<>(); // Criamo

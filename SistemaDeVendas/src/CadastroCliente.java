@@ -1,8 +1,8 @@
-import java.util.UUID;
 
 public class CadastroCliente extends Cliente {
 
     // atributos:
+    private static int contadorClientes = 1000; // Começa de 1000 e vai aumentando
     private String idCliente; // Esse ID é gerado automaticamente, nem precisa se preocupar.
     private String enderecoCliente; // Onde o cliente mora, uai!
     private String telefoneCliente; // O número pra ligar pro cliente.
@@ -22,7 +22,10 @@ public class CadastroCliente extends Cliente {
         verificador.verificarTelefone(telefoneCliente); // Olha se o telefone tá no formato certo.
         verificador.verificarEmail(emailCliente); // Verifica se o e-mail é válido.
 
-        this.idCliente = UUID.randomUUID().toString(); // Gera um ID automático, tipo um RG pro cliente.
+        // Por que usamos String.valueOf()?
+        // Porque precisavamos transformar o contador de clientes (um número) em uma
+        // String para armazenar como ID do cliente....
+        this.idCliente = String.valueOf(contadorClientes++);
         this.enderecoCliente = enderecoCliente;
         this.telefoneCliente = telefoneCliente;
         this.emailCliente = emailCliente;

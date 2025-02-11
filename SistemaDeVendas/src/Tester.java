@@ -26,11 +26,11 @@ public class Tester {
 
                 CadastroCliente novoCliente;
                 if (opcaoVip.equalsIgnoreCase("S")) {
-                    // Ai é VIP, então vai cria um cliente VIP
+                    // Ai é VIP, ai que tá bom. A pessoa vai ganhar desconto
                     novoCliente = new ClienteVip(nome, cpf, endereco, telefone, email, senha);
                     System.out.println("Cliente VIP cadastrado com sucesso!");
                 } else {
-                    // Ai não é Vip, então vai cria um cliente comum
+                    // Ai não é Vip, não tem problema, fazemos o cadastro também
                     novoCliente = new CadastroCliente(nome, cpf, endereco, telefone, email, senha);
                     System.out.println("Cliente comum cadastrado com sucesso!");
                 }
@@ -38,7 +38,7 @@ public class Tester {
                 // Adiciona o cliente à lista de gerenciamento
                 gerenciamento.addCadastroCliente(novoCliente);
 
-                // Verificar se o cliente é VIP
+                // Verifica se o cliente é VIP e faz os avisos necessários
                 if (gerenciamento.verificarClienteVip(cpf)) {
                     System.out.println("O cliente " + nome + " é VIP!");
                 } else {
@@ -51,25 +51,31 @@ public class Tester {
             }
 
             // Aqui pergunta se deseja cadastrar um novo cliente
-            System.out.print("\nDeseja cadastrar outro cliente? (s/n): ");
+            System.out.print("\nDeseja cadastrar outro cliente? (S/N): ");
             String resposta = scanner.nextLine();
-            if (resposta.equalsIgnoreCase("n")) {
+            if (resposta.equalsIgnoreCase("N")) {
                 continuar = false; // se não quiser vamos embora. Acaba o loop
             }
         }
 
-        // O que é isso? Um menu, para quê? Para depois de cadastrar olhar
+        // O que é isso? É o menu para gerenciar os clientes:
         int opcao;
         do {
-            System.out.println("\n=== MENU ===");
+            System.out.println("\n---- MENU ----");
             System.out.println("1 - Listar Clientes");
             System.out.println("2 - Buscar Cliente por ID");
             System.out.println("3 - Remover Cliente por ID");
+            System.out.println("4 - Verificar se é VIP");
             System.out.println("0 - Sair");
             System.out.print("Escolha uma opção: ");
 
-            opcao = Integer.parseInt(scanner.nextLine()); // O porque de usar 'parse' é para evita erro ao misturar
-                                                          // nextInt() e nextLine()
+            // Aqui é a checagem pra ver se o pessoal vai errar na hora de digitar.
+            try {
+                opcao = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida! Digite um número.");
+                opcao = -1; // Força a repetição do menu
+            }
 
             switch (opcao) {
                 case 1:
@@ -79,8 +85,9 @@ public class Tester {
                 case 2:
                     // Busca um cliente pelo ID:
                     System.out.print("Digite o ID do cliente: ");
-                    String idBusca = scanner.nextLine();
-                    CadastroCliente encontrado = gerenciamento.buscarCliente(idBusca);
+                    String idBusca = scanner.nextLine(); // Agora é int, não String
+
+                    CadastroCliente encontrado = gerenciamento.buscarCliente(String.valueOf(idBusca));
                     if (encontrado != null) {
                         System.out.println("Cliente encontrado: " + encontrado);
                     } else {
@@ -91,6 +98,15 @@ public class Tester {
                     System.out.print("Digite o ID do cliente para remover: ");
                     String idRemove = scanner.nextLine();
                     gerenciamento.removerCliente(idRemove);
+                    break;
+                case 4:
+                    System.out.print("Digite o CPF do cliente para verificar se é VIP: ");
+                    String cpfVip = scanner.nextLine();
+                    if (gerenciamento.verificarClienteVip(cpfVip)) {
+                        System.out.println("O cliente é VIP!");
+                    } else {
+                        System.out.println("O cliente não é VIP.");
+                    }
                     break;
                 case 0:
                     System.out.println("Saindo do sistema...");

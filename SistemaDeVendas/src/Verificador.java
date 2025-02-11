@@ -71,13 +71,6 @@ public class Verificador {
         }
     }
 
-    // Método para verificar se o código é válido (deve ter 4 dígitos)
-    public void verificarCodigo(int codigo) throws InvalidCodigoException {
-        if (codigo < 1000 || codigo > 9999) {
-            throw new InvalidCodigoException("Código inválido! Deve conter exatamente 4 dígitos.");
-        }
-    }
-
     // Método para verificar se a resposta do usuário é válida ('s' ou 'n')
     public void verificarResposta(String opcao) throws IllegalArgumentException {
         if (opcao.length() != 1) {
