@@ -1,7 +1,10 @@
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class Tester {
+    private static final Logger logger = Logger.getLogger(GerenciamentoCliente.class.getName());
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in); // Pra quê esse scanner? Pra ler o que o usuário digitar
         GerenciamentoCliente gerenciamento = new GerenciamentoCliente(); // Cria o gerenciador de clientes
@@ -70,7 +73,8 @@ public class Tester {
             System.out.println("2 - Buscar Cliente por CPF");
             System.out.println("3 - Exibir Produtos Disponíveis");
             System.out.println("4 - Processar Pedido de Venda");
-            System.out.println("5 - Gerar Relatório de Vendas");
+            System.out.println("5 - Gerar Relatório de Vendas"); // Gui
+            System.out.println("6 - Feed"); // Gui
             System.out.println("0 - Sair");
             System.out.print("Escolha uma opção: ");
 
@@ -79,85 +83,44 @@ public class Tester {
                 opcao = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida! Digite um número.");
-                opcao = -1; // Força a repetição do menu
+                logger.warning("ERRO!!");
+                opcao = -1;
+                /* Força a repetição do menu */ continue;
+
             }
 
             // Ações conforme a opção escolhida
             switch (opcao) {
                 case 1:
-                    // Lista todos os clientes
+                    logger.info("Lista de todos os cliente: ");
                     gerenciamento.listarClientes();
                     break;
                 case 2:
                     System.out.print("Digite o CPF do cliente: ");
                     String cpfBusca = scanner.nextLine();
+                    logger.info("Busca por meio do CPF: " + cpfBusca);
+
                     CadastroCliente clienteEncontrado = gerenciamento.buscarClientePorCPF(cpfBusca);
                     if (clienteEncontrado != null) {
                         System.out.println("Cliente encontrado: " + clienteEncontrado);
-                    } else {
+                                          } else {
                         System.out.println("Cliente não encontrado.");
+                    
                     }
                     break;
                 case 3:
+                    logger.info("Controle Estoque: ");
                     exibirProdutosDisponiveis(controladorEstoque);
                     break;
                 case 4:
                     processarPedido(scanner, controladorEstoque, gerenciamento);
                     break;
                 case 5:
-                    System.out.println("\n--- Processamento de Pedido ---");
-                    // Seleciona o cliente para o pedido
-                    System.out.print("Digite o CPF do cliente que está fazendo o pedido: ");
-                    String cpfPedido = scanner.nextLine();
 
-                    // Verifica se o cliente existe
-                    CadastroCliente clientePedido = gerenciamento.buscarClientePorCPF(cpfPedido);
-                    if (clientePedido != null) {
-                        Pedido pedido = new Pedido(clientePedido, controladorEstoque);
-                        boolean pedidoEmAndamento = true;
-
-                        // Loop para adicionar produtos ao pedido
-                        while (pedidoEmAndamento) {
-                            System.out.println("Digite o nome do produto ou 'sair' para finalizar o pedido: ");
-                            String produtoNome = scanner.nextLine();
-
-                            if (produtoNome.equalsIgnoreCase("sair")) {
-                                pedidoEmAndamento = false; // Finaliza o pedido
-                                pedido.finalizarPedido();
-                                System.out.println("Pedido finalizado.");
-                            } else {
-                                System.out.print("Digite a quantidade: ");
-                                int quantidade = scanner.nextInt();
-                                scanner.nextLine(); // Limpa o buffer
-
-                                // Verifica se o produto está disponível e adiciona
-                                Produto produto = controladorEstoque.buscarProduto(produtoNome);
-                                if (produto != null) {
-                                    pedido.adicionarProduto(produto, quantidade);
-                                } else {
-                                    System.out.println("Produto não encontrado.");
-                                }
-                            }
-                        }
-
-                        // Salva o pedido em arquivo CSV
-                        pedido.salvarPedidoCSV();
-                        System.out.println("Pedido registrado com sucesso!");
-                    } else {
-                        System.out.println("Cliente não encontrado!");
-                    }
-                    break;
                 case 6:
-                    System.out.println("\n--- Gerar Relatório de Vendas ---");
-                    // Gera o relatório de vendas
-                    System.out.print("Digite o período do relatório (ex: 01/01/2025 a 31/01/2025): ");
-                    String periodo = scanner.nextLine();
 
-                    // Geração do relatório (feito por outra pessoa)
-                    ManipularArquivoVendas manipuladorVendas = new ManipularArquivoVendas();
-                    manipuladorVendas.gerarRelatorio(periodo);
-                    break;
                 case 0:
+                    logger.info("Saida!");
                     System.out.println("Saindo do sistema...");
                     break;
                 default:
@@ -181,7 +144,7 @@ public class Tester {
         }
     }
 
-    // Método para processar o pedido de venda
+    // Método p/ processar o pedido de venda
     private static void processarPedido(Scanner scanner, ControladorDeEstoque controladorEstoque,
             GerenciamentoCliente gerenciamento) {
         System.out.println("\n--- Processamento de Pedido ---");
