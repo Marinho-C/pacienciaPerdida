@@ -1,117 +1,91 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ManipularArquivoVendas {
-    private String nomeArquivo;
-    private GerenciamentoCliente gerenciamentoCliente;
-    private GerenciamentoPedido gerenciamentoPedido;
-    private ControladorDeEstoque controladorDeEstoque;
+    private String nomeArquivo = "vendas.csv";
 
-    // Construtor atualizado para incluir o ControladorDeEstoque
-    public ManipularArquivoVendas(String nomeArquivo, GerenciamentoCliente gerenciamentoCliente,
-            GerenciamentoPedido gerenciamentoPedido, ControladorDeEstoque controladorDeEstoque) {
-        this.nomeArquivo = nomeArquivo;
-        this.gerenciamentoCliente = gerenciamentoCliente;
-        this.gerenciamentoPedido = gerenciamentoPedido;
-        this.controladorDeEstoque = controladorDeEstoque;
-        criarArquivo();
-    }
-
-    // Metodo:
-    // Cria arquivos se eles não existirem
-    private void criarArquivo() {
-        File arquivo = new File(nomeArquivo); // Estamos criando o arquivo de vendas
-        try {
-            if (arquivo.createNewFile()) { // será que arquivo vai ser criado?
-                System.out.println("Arquivo criado com sucesso: " + arquivo.getName()); // queremos aplausos, o arquvo
-                                                                                        // foi criado
-            }
+    // Método para escrever um pedido no CSV
+    public void escreverCSV(Pedido pedido) {
+        try (FileWriter escrever = new FileWriter(nomeArquivo, true);
+                BufferedWriter bw = new BufferedWriter(escrever)) {
+            bw.write(pedido.formatarArqVendas());
+            bw.newLine();
         } catch (IOException e) {
-            System.out.println("Erro ao criar arquivo: " + e.getMessage()); // infelizmente não deu
+            e.printStackTrace();
         }
     }
 
-    // Agora vamos carregar os pedidos salvos no arquivo
-    public void carregarPedidos() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(nomeArquivo))) {
+    // Método para ler todos os pedidos do CSV
+    public List<String> lerCSV() {
+        List<String> pedidos = new ArrayList<>();
+        try (BufferedReader ler = new BufferedReader(new FileReader(nomeArquivo))) {
             String linha;
-            boolean cabecalho = true;
-
-            while ((linha = reader.readLine()) != null) {
-                if (cabecalho) {
-                    cabecalho = false;
-                    continue; // Pula o cabeçalho
-                }
-
-                String[] dados = linha.split(",");
-                if (dados.length < 4) {
-                    System.out.println("Linha inválida no arquivo de pedidos, ignorando...");
-                    continue;
-                }
-
-                try {
-                    // Aqui a gente pega os dados e transforma em informações (como o CPF do
-                    // cliente e o nome do produto)
-                    int codigoPedido = Integer.parseInt(dados[0]);
-                    String cpfCliente = dados[1];
-                    String nomeProduto = dados[2];
-                    int quantidade = Integer.parseInt(dados[3]);
-
-                    // aqui, nesse momento, procuraremos o cliente e o produto
-                    Cliente cliente = gerenciamentoCliente.buscarCliente(cpfCliente);
-                    if (cliente == null) {
-                        System.out.println("Cliente com CPF " + cpfCliente + " não encontrado. Pedido ignorado.");
-                        continue;
-                    }
-
-                    Produto produto = controladorDeEstoque.buscarProduto(nomeProduto);
-                    if (produto == null) { // se não tem pedido, não tem pedido (lógica)
-                        System.out.println("Produto " + nomeProduto + " não encontrado no estoque. Pedido ignorado.");
-                        continue;
-                    }
-
-                    // Criamos o pedido e colocamos os itens nele
-                    Pedido pedido = new Pedido(codigoPedido, cliente);
-                    pedido.adicionarItem(new ItemPedido(produto, quantidade));
-                    gerenciamentoPedido.adicionarPedido(pedido);
-                } catch (NumberFormatException e) {
-                    System.out.println("Erro ao converter valores no arquivo de pedidos: " + e.getMessage());
-                }
+            while ((linha = ler.readLine()) != null) {
+                pedidos.add(linha);
             }
         } catch (IOException e) {
-            System.out.println("Erro ao ler arquivo de pedidos: " + e.getMessage());
+            e.printStackTrace();
         }
+        return pedidos;
     }
 
-    public void salvarPedidos() {
-        List<Pedido> pedidos = gerenciamentoPedido.getPedidos();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nomeArquivo, false))) {
-            writer.write("Código Pedido,CPF Cliente,Nome Produto,Quantidade");
-            writer.newLine();
-
-            for (Pedido pedido : pedidos) {
-                for (ItemPedido item : pedido.getItens()) {
-                    String linha = pedido.getCodigoPedido() + "," +
-                            pedido.getCliente().getCpf() + "," +
-                            item.getProduto().getNome() + "," +
-                            item.getQuantidade();
-                    writer.write(linha);
-                    writer.newLine();
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Erro ao salvar pedidos no arquivo: " + e.getMessage());
-        }
-    }
-
-    public void imprimirPedidos() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(nomeArquivo))) {
+    // Método para atualizar um pedido no CSV (baseado no ID)
+    public void atualizarCSV(int idPedido, String novaLinha) {
+        List<String> linhas = new ArrayList<>();
+        try (BufferedReader ler = new BufferedReader(new FileReader(nomeArquivo))) {
             String linha;
-            while ((linha = reader.readLine()) != null) {
-                System.out.println(linha);
+            while ((linha = ler.readLine()) != null) {
+                if (linha.startsWith(idPedido + ";")) {
+                    linha = novaLinha;
+                }
+                linhas.add(linha);
             }
         } catch (IOException e) {
-            System.out.println("Erro ao ler pedidos: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        try (FileWriter escritor = new FileWriter(nomeArquivo);
+                BufferedWriter bw = new BufferedWriter(escritor)) {
+            for (String l : linhas) {
+                bw.write(l);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+    public void gerarRelatorio(String periodo) {
+        // Leitura dos pedidos do arquivo CSV
+        List<String> pedidosCSV = lerCSV();
+
+        // Armazenar os pedidos filtrados por período
+        List<String> pedidosNoPeriodo = new ArrayList<>();
+
+        // Iterar sobre os pedidos e filtrar com base no período
+        for (String pedidoLinha : pedidosCSV) {
+            String[] campos = pedidoLinha.split(";"); // Separando a linha por ';'
+
+            if (campos.length >= 2) {
+                String dataPedido = campos[1]; // A data está no segundo campo
+
+                // Aqui, usamos startsWith() para garantir que a data comece com o mês/ano
+                if (dataPedido.startsWith(periodo)) {
+                    pedidosNoPeriodo.add(pedidoLinha);
+                }
+            }
+        }
+
+        // Gerar o relatório com os pedidos no período
+        if (pedidosNoPeriodo.isEmpty()) {
+            System.out.println("Não há pedidos no período " + periodo);
+        } else {
+            System.out.println("Relatório de Vendas - Período: " + periodo);
+            for (String pedido : pedidosNoPeriodo) {
+                System.out.println(pedido);
+            }
+        }
+    }
+
 }

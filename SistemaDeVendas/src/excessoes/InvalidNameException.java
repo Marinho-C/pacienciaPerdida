@@ -1,8 +1,9 @@
 package excessoes;
+public class InvalidNameException extends Exception{
+    public InvalidNameException(){
+    }
 
-// Exceção para nome inválido
-public class InvalidNameException extends Exception {
-    public InvalidNameException(String mensagem) {
-        super(mensagem);
+    public InvalidNameException(String msg){
+        super(msg);
     }
 }

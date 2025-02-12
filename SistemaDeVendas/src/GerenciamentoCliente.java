@@ -29,35 +29,19 @@ public class GerenciamentoCliente {
         }
     }
 
-    // Método pra buscar um cliente pelo ID:
-    public CadastroCliente buscarCliente(String id) {
+    public CadastroCliente buscarClientePorCPF(String cpf) {
         for (CadastroCliente cliente : clientes) {
-            if (cliente.getIdCliente().equals(id)) { // Se o ID bater, retorna o cliente
+            if (cliente.getCpf().equals(cpf)) { // Busca pelo CPF
                 return cliente;
             }
         }
         return null; // Se não achar, retorna null.
     }
 
-    // Método pra remover um cliente pelo ID:
-    public boolean removerCliente(String id) {
-        CadastroCliente clienteEncontrado = buscarCliente(id);
-        if (clienteEncontrado != null) {
-            clientes.remove(clienteEncontrado);
-            System.out.println("Cliente removido com sucesso.");
-            return true;
-        } else {
-            System.out.println("Cliente não encontrado.");
-            return false;
-        }
-    }
-
-    // Método pra verificar se o cliente é VIP:
     public boolean verificarClienteVip(String cpf) {
-        for (CadastroCliente cliente : clientes) { // Agora percorre CadastroCliente
-            if (cliente.getCpf().equals(cpf) && cliente instanceof ClienteVip) {
-                return true; // O cliente é VIP
-            }
+        CadastroCliente cliente = buscarClientePorCPF(cpf);
+        if (cliente != null && cliente instanceof ClienteVip) {
+            return true; // O cliente é VIP
         }
         return false; // O cliente não é VIP
     }
